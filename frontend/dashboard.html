@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="AI Resume Analyser Dashboard — Upload, analyse, and review your resumes with AI-powered insights.">
+    <title>Dashboard — AI Resume Analyser</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- Font Awesome for professional icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect x='4' y='3' width='16' height='18' rx='2' ry='2'/><line x1='8' y1='7' x2='16' y2='7'/><line x1='8' y1='11' x2='16' y2='11'/><line x1='8' y1='15' x2='13' y2='15'/></svg>">
+</head>
+
+<body>
+    <!-- ── Navbar ───────────────────────────────────────────────────────── -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <div class="logo-icon">
+                <i class="fa-solid fa-file-lines"></i>
+            </div>
+            <span>Resume Analyser</span>
+        </div>
+        <div class="navbar-actions">
+            <div class="user-badge">
+                <div class="avatar" id="userAvatar">U</div>
+                <span id="userEmail">user@example.com</span>
+            </div>
+            <button class="btn btn-ghost" id="logoutBtn" onclick="handleLogout()">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span>Logout</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- ── Summary Header ──────────────────────────────────────────────── -->
+    <div class="summary-header" id="summaryHeader">
+        <div class="summary-card">
+            <div class="summary-icon">
+                <i class="fa-solid fa-chart-line"></i>
+            </div>
+            <div class="summary-content">
+                <div class="summary-label">Last Analysis</div>
+                <div class="summary-title" id="summaryTitle">No resume analysed yet</div>
+                <div class="summary-subtitle" id="summarySubtitle">Upload your first resume to get started</div>
+            </div>
+            <div class="summary-score" id="summaryScore">
+                <div class="summary-score-value">--</div>
+                <div class="summary-score-label">Score</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Dashboard Grid ──────────────────────────────────────────────── -->
+    <div class="dashboard">
+        <!-- Main content area -->
+        <div class="main-content">
+            <!-- Upload Section -->
+            <div class="section-card" id="uploadSection">
+                <div class="section-title">
+                    <span class="icon"><i class="fa-solid fa-file-arrow-up"></i></span> Upload Resume
+                </div>
+
+                <div class="upload-zone" id="uploadZone">
+                    <div class="upload-icon">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                    </div>
+                    <h3>Drop your PDF resume here</h3>
+                    <p>or <span class="browse-link" id="browseLink">browse files</span></p>
+                    <p class="mt-sm text-muted" style="font-size: 0.8rem;">PDF files only, up to 10 MB</p>
+                </div>
+
+                <input type="file" id="fileInput" accept=".pdf,application/pdf">
+
+                <!-- Selected file preview -->
+                <div id="filePreview" class="hidden">
+                    <div class="file-selected">
+                        <span class="file-icon"><i class="fa-solid fa-file-lines"></i></span>
+                        <div class="file-info">
+                            <div class="file-name" id="fileName"></div>
+                            <div class="file-size" id="fileSize"></div>
+                        </div>
+                        <button class="remove-file" id="removeFile" title="Remove file">✕</button>
+                    </div>
+                    <div class="upload-actions">
+                        <button class="btn btn-primary" id="uploadBtn" onclick="handleUpload()">
+                            <i class="fa-solid fa-rocket"></i>
+                            <span>Analyse Resume</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Progress -->
+                <div id="progressArea" class="hidden">
+                    <div class="progress-container">
+                        <div class="progress-bar-track">
+                            <div class="progress-bar-fill" id="progressBar" style="width: 0%"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">Uploading...</div>
+                    </div>
+                </div>
+
+                <!-- Alert -->
+                <div id="uploadAlert" class="hidden mt-md"></div>
+            </div>
+
+            <!-- Inline result (shown after fresh upload) -->
+            <div class="section-card hidden mt-lg" id="resultSection">
+                <div class="section-title">
+                    <span class="icon"><i class="fa-solid fa-bullseye"></i></span> Analysis Result
+                </div>
+                <div id="resultContent"></div>
+            </div>
+        </div>
+
+        <!-- History Sidebar -->
+        <div class="history-sidebar">
+            <div class="section-card">
+                <button class="section-title history-accordion-toggle" id="historyAccordionToggle" type="button"
+                    aria-expanded="true" aria-controls="historyAccordionContent">
+                    <span class="section-title-left">
+                        <span class="icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                        <span>History</span>
+                    </span>
+                    <i class="fa-solid fa-chevron-down history-accordion-chevron" aria-hidden="true"></i>
+                </button>
+                <div id="historyAccordionContent">
+                    <div class="history-list" id="historyList">
+                        <!-- populated by JS -->
+                        <div class="loading-overlay">
+                            <div class="spinner spinner-lg"></div>
+                            <div class="loading-text">Loading history...</div>
+                        </div>
+                    </div>
+                    <!-- Empty state will be populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Detail Modal ────────────────────────────────────────────────── -->
+    <div class="modal-overlay hidden" id="detailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-file-lines"></i> <span id="modalFileName">Resume</span></h2>
+                <button class="modal-close" onclick="closeModal()">✕</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/dashboard.js"></script>
+</body>
+
+</html>
